@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Alamofire
 
 class ViewController: UIViewController {
 
@@ -15,10 +16,26 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        videoListCollectionView.backgroundColor = .red
         videoListCollectionView.delegate = self
         videoListCollectionView.dataSource = self
-        videoListCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
+        videoListCollectionView.register(UINib(nibName: "VideoListCell", bundle: nil), forCellWithReuseIdentifier: cellId)
+        
+        let urlString = "https://www.googleapis.com/youtube/v3/search?q=lebronjames&key=AIzaSyCvvVK-Ko-otlJFBmHqKxkAJDz44v6Z9DM&part=snippet"
+        
+        let request = AF.request(urlString)
+        
+        request.responseJSON{(response) in
+            do{
+                guard let data = response.data else { return }
+                let decode = JSONDecoder()
+                let video = try decode.decode(Video.self, from: data)
+                print("video:", video.items.count)
+            } catch {
+                print("変換に失敗しました\(error)")
+            }
+            
+            print("response", response)
+        }
     }
 
 
@@ -36,7 +53,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = videoListCollectionView.dequeueReusableCell(withReuseIdentifier: cellId , for: indexPath)
-        cell.backgroundColor = .green
         return cell
     }
     
